@@ -1,0 +1,110 @@
+#include "stdafx.h"
+
+#define N 3
+
+struct person
+{
+	char name[20];
+	char surname[20];
+	int phone;
+	int age;
+}Person = { "Petr", "Petrov", 5678, 234 }, b;
+
+
+
+void connection(char *str, char *stp)
+{
+	int i = 0;
+	while (str[i] != '\0')
+	{
+		i++;
+	}
+	int j = 0;
+	while (stp[j] != '\0')
+	{
+		str[i + j] = stp[j];
+		j++;
+	}
+	str[i + j] = '\0';
+}
+
+
+void archieve(struct person *b)
+{
+	FILE *fp;
+	char *path = "C:/Users/student/Desktop/archieve.txt";
+
+	fp = fopen(path, "w+");
+	if (fp == NULL)
+	{
+		printf("File not opened! Error!");
+	}
+	else
+	{
+		printf("File opened!\n");
+	}
+
+	fwrite(&Person, sizeof(Person), 1, fp);
+}
+
+void unarchieve(struct person *b)
+{
+	FILE *fp;
+	char *path = "C:/Users/student/Desktop/archieve.txt";
+
+	FILE *fp;
+	char *path = "C:/Users/student/Desktop/archieve.txt";
+
+	fp = fopen(path, "w+");
+	if (fp == NULL)
+	{
+		printf("File not opened! Error!");
+	}
+	else
+	{
+		printf("File opened!\n");
+	}
+
+	fread(&Person, sizeof(Person), 1, fp);
+}
+
+
+int main()
+{
+	    for (int i = 0; i < N; i ++) 
+		{
+	        if (i == 0) {
+	            (Person + i) ->name[0] = '\0';
+	            connection((Person + i) ->name, "Alex");
+	            (Person + i) ->surname[0] = '\0';
+	            connection((Person + i) ->surname, "Orlow");
+	            (Person + i) ->phone = 666;
+	            (Person + i) ->age = 18;
+	        }
+	        if (i == 1) {
+	            (Person + i) ->name[0] = '\0';
+	            connection((Person + i) ->name, "Nazar");
+	            (Person + i) ->surname[0] = '\0';
+	            connection((Person + i) ->surname, "Prudnikov");
+	            (Person + i) ->phone = 777;
+	            (Person + i) ->age = 17;
+	
+	        }
+	        if (i == 2) {
+	            (Person + i) ->name[0] = '\0';
+	            connection((Person + i) ->name, "Timur");
+	            (Person + i) ->surname[0] = '\0';
+	            connection((Person + i) ->surname, "Fatahov");
+	            (Person + i) ->phone = 888;
+	            (Person + i) ->age = 18;
+	        }
+	    }
+	    for (int i = 0; i < N; i ++) 
+		{
+	        printf("%s %s %d %d\n", (Person + i) ->name, (Person + i) ->surname, (Person + i) ->phone, (Person + i) ->age);
+	    }
+
+
+	archieve(&Person);
+	return 0;
+}
