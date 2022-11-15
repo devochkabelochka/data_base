@@ -1,0 +1,39 @@
+// database_with_file.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+//fseek(), ftell()
+struct person
+{
+	char name[20];
+	char surname[20];
+	int phone;
+	int age;
+};
+int  add(int n) { return ++n; }
+FILE* fd;
+
+void archiver(struct person PersonData)
+{
+	fwrite(&PersonData, sizeof(person), 1, fd);
+}
+
+void unarchiver(struct person PersonData)
+{
+	FILE* fd = fopen("C:/Users/student/Desktop/database/database.txt", "r+");
+	while (!feof(fd))
+	{
+		fread(&PersonData, sizeof(person), 1, fd);
+		printf("%s %s %d %d\n", PersonData.name, PersonData.surname, PersonData.phone, PersonData.age);
+	}
+	fclose(fd);
+}
+int main()
+{
+	fd = fopen("C:/Users/student/Desktop/database/database.txt", "w+");
+	struct person PersonData = { "aa", "bb", 123, 123 };
+	archiver(PersonData);
+	unarchiver(PersonData);
+	return 0;
+}
+
