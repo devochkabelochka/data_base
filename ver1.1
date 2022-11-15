@@ -1,0 +1,195 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+#define N 3 //TODO: get rid of const and make array of structs dynamic-sized
+
+struct person
+{
+    char name[20];
+    char surname[20];
+    int phone;
+    int age;
+}PersonData[N];
+
+void connection(char *str, char *stp)
+{
+    int i = 0;
+    while (str[i] != '\0')
+    {
+        i ++;
+    }
+    int j = 0;
+    while (stp[j] != '\0')
+    {
+        str[i + j] = stp[j];
+        j ++;
+    }
+    str[i + j] = '\0';
+}
+
+
+void archieve(struct person* PersonData)
+{
+    FILE *fp;
+    char* path = "/home/lokobelka/Desktop/projects/database/database.txt";
+
+    fp = fopen(path, "w+");
+    if (fp == NULL)
+    {
+        printf("file not opened, met an error\n");
+        exit(1);
+    }
+    else
+    {
+        printf("archiving...\n");
+    }
+
+    fwrite(&PersonData, sizeof(PersonData), 1, fp);
+}
+
+void unarchieve(struct person* PersonData)
+{
+    FILE *fp;
+    char *path = "/home/lokobelka/Desktop/projects/database/database.txt";
+    
+    
+    fp = fopen(path, "r+");
+    if (fp == NULL)
+    {
+        printf("file not opened, met an error\n");
+        exit(1);
+    }
+    else
+    {
+        printf("unarchiving...\n");
+    }
+    
+    fread(&PersonData, sizeof(PersonData), 1, fp);
+}
+
+void personFill(struct person* PersonData, int personNumber)
+{
+    scanf("%s %s %d %d", &PersonData[personNumber - 1].name, &PersonData[personNumber - 1].surname, &PersonData[personNumber - 1].phone, &PersonData[personNumber - 1].age);
+    archieve(PersonData);
+}
+
+void personShow(struct person* PersonData, int personNumber)
+{
+    //TODO: show an error if inputted person's number is out of bounds of an array
+    if(PersonData[personNumber - 1].phone == 0)
+    {
+        printf("person number %d is empty\n", personNumber);
+    }
+    else
+    {
+        printf("person number %d: %s %s %d %d\n", personNumber, PersonData[personNumber - 1].name, PersonData[personNumber - 1].surname, PersonData[personNumber - 1].phone, PersonData[personNumber - 1].age);
+    }
+}
+
+void databaseShow(struct person* PersonData)
+{
+    for (int i = 1; i <= N; i++)
+    {
+        personShow(PersonData, i);
+    }
+}
+
+void deleteData(struct person* PersonData, int personNumber)
+{
+    //TODO: show an error if inputted person's number is out of bounds of an array
+    if(PersonData[personNumber - 1].phone == 0)
+    {
+        printf("there is nothing to delete...\n");
+    }
+    else
+    {
+        memset(&PersonData[personNumber - 1], 0, sizeof(PersonData[personNumber - 1])); //idk how exactly memset works
+        printf("succesfully deleted...\n");
+    }
+}
+
+void basicUserInterface(struct person* PersonData) 
+{
+    //here i came up with a crutch to make console clean and pretty, not sure if it's comfortable to use tho
+    int n;
+    int personNumber;
+    bool loop = true;
+
+    while (loop)
+    {
+        loop = false;
+        printf("choose your operation:\n");
+        printf("1. enter data of a person\n"); //TODO: show an error if inputted person's number is out of bounds of an array
+        printf("2. show data of a person\n"); //TODO: show an error if inputted person's number is out of bounds of an array
+        printf("3. show the whole database\n");
+        printf("4. delete data of a person\n"); //TODO: show an error if inputted person's number is out of bounds of an array
+        printf("5. exit the program\n");
+        scanf("%d", &n);
+        system("clear");
+
+        switch(n)
+        {
+        case 1:
+            printf("you wish to enter data...\n");
+            printf("enter number of a person: ");
+            scanf("%d", &personNumber);
+            printf("enter full data: ");
+            personFill(PersonData, personNumber);
+            
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber); //that's the crutch
+            
+            loop = true;
+            system("clear");
+            break;
+        case 2:
+            printf("you wish to show person...\n");
+            printf("enter number of a person: ");
+            scanf("%d", &personNumber);
+            personShow(PersonData, personNumber);
+            
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+            
+            loop = true;
+            system("clear");
+            break;
+        case 3:
+            printf("you wish to show everything...\n");
+            databaseShow(PersonData);
+            
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+            
+            loop = true;
+            system("clear");
+            break;
+        case 4:
+            printf("you wish to delete data...\n");
+            printf("enter number of a person: ");
+            scanf("%d", &personNumber);
+            deleteData(PersonData, personNumber);
+            
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+            
+            loop = true;
+            system("clear");
+            break;
+        case 5:
+            system("clear");
+            printf("you wish to leave...\n");
+            exit(1);
+
+        }
+    }
+}
+
+int main()
+{
+    system("clear");
+    basicUserInterface(PersonData);
+    unarchieve(PersonData);
+    return 0;
+}
