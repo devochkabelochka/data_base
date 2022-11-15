@@ -1,0 +1,283 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+FILE* fd;
+FILE* fd_buffer;
+
+struct person
+{
+	char name[20];
+	char surname[20];
+	int phone;
+	int age;
+};
+
+int personCount()
+{
+    fseek(fd, 0, SEEK_END);
+    int size = ftell(fd);
+    return (size / sizeof(struct person));
+}
+
+void enterData(struct person PersonData)
+{
+    fseek(fd, 0, SEEK_END);
+
+    scanf("%s %s %d %d", &PersonData.name, &PersonData.surname, &PersonData.phone, &PersonData.age);
+	fwrite(&PersonData, sizeof(struct person), 1, fd);
+
+    printf("archiving...\n");
+}
+
+void showSingleData(struct person PersonData, int personNumber)
+{
+    if (personCount() == 0)
+    {   
+        printf("database is empty...\n");
+        return;
+    }
+    printf("unarchiving...\n");
+
+    fseek(fd, (personNumber - 1) * 48, SEEK_SET);
+    fread(&PersonData, sizeof(struct person), 1, fd);
+
+    printf("%s %s %d %d\n", PersonData.name, PersonData.surname, PersonData.phone, PersonData.age);
+}
+
+void showData(struct person PersonData)
+{
+    if (personCount() == 0)
+    {
+        printf("database is empty...\n");
+        return;
+    }
+    printf("unarchiving...\n");
+
+
+    for (int i = 0; i < personCount(); i++)
+    {
+        fseek(fd, i * 48, SEEK_SET);
+        fread(&PersonData, sizeof(struct person), 1, fd);
+        printf("%d. %s %s %d %d\n", i + 1, PersonData.name, PersonData.surname, PersonData.phone, PersonData.age);
+    }
+
+}
+
+void deleteData(struct person PersonData)
+{
+    fd = freopen("database.txt", "w+", fd); //opening a file with "w+"" modifier first clears the file, then opens it
+}
+
+void deleteSingleData(struct person PersonData, int personNumber)
+{
+    fd_buffer = fopen("/home/lokobelka/Desktop/projects/database/buffer.txt", "w");
+    for (int i = 0; i < personCount(); i++)
+    {
+        fseek(fd, i * 48, SEEK_SET);
+        fread(&PersonData, sizeof(PersonData), 1, fd);
+        if(i == (personNumber - 1))
+        {
+            continue;
+        }
+        fwrite(&PersonData, sizeof(PersonData), 1, fd_buffer);
+    }
+    fclose(fd);
+    remove("database.txt");
+    fclose(fd_buffer);
+    rename("buffer.txt", "database.txt");
+    fd = fopen("/home/lokobelka/Desktop/projects/database/database.txt", "r+");
+}
+
+void changeData(struct person PersonData, int personNumber)
+{
+    fd_buffer = fopen("/home/lokobelka/Desktop/projects/database/buffer.txt", "w");
+
+    for (int i = 0; i < personCount(); i++)
+    {
+        fseek(fd, i * 48, SEEK_SET);
+        fread(&PersonData, sizeof(PersonData), 1, fd);
+        if(i == (personNumber - 1))
+        {
+            printf("enter new data...\n");
+            scanf("%s %s %d %d", &PersonData.name, &PersonData.surname, &PersonData.phone, &PersonData.age);
+            fwrite(&PersonData, sizeof(PersonData), 1, fd_buffer);
+            continue;
+        }
+        fwrite(&PersonData, sizeof(PersonData), 1, fd_buffer);
+    }
+
+    fclose(fd);
+    remove("database.txt");
+    fclose(fd_buffer);
+    rename("buffer.txt", "database.txt");
+    fd = fopen("/home/lokobelka/Desktop/projects/database/database.txt", "r+");
+}
+
+void changeSingleData(struct person PersonData, int personNumber, int offset)
+{
+    fd_buffer = fopen("/home/lokobelka/Desktop/projects/database/buffer.txt", "w");
+
+    for (int i = 0; i < personCount(); i++)
+    {
+        fseek(fd, i * 48, SEEK_SET);
+        fread(&PersonData, sizeof(PersonData), 1, fd);
+        if(i == (personNumber - 1))
+        {
+            printf("enter new data...\n");
+            switch(offset)
+            {
+            case 1:
+                fseek(fd, i * 48, SEEK_SET);
+                scanf("%s", &PersonData.name);
+                break;
+            case 2:
+                fseek(fd, (i * 48) + 20, SEEK_SET);
+                scanf("%s", &PersonData.surname);
+                break;
+            case 3:
+                fseek(fd, (i * 48) + 40, SEEK_SET);
+                scanf("%d", &PersonData.phone);
+                break;
+            case 4:
+                fseek(fd, (i * 48) + 44, SEEK_SET);
+                scanf("%d", &PersonData.age);
+                break;
+            }
+            fwrite(&PersonData, sizeof(PersonData), 1, fd_buffer);
+            continue;
+        }
+        fwrite(&PersonData, sizeof(PersonData), 1, fd_buffer);
+    }
+
+    fclose(fd);
+    remove("database.txt");
+    fclose(fd_buffer);
+    rename("buffer.txt", "database.txt");
+    fd = fopen("/home/lokobelka/Desktop/projects/database/database.txt", "r+");
+}
+
+void basicUserInterface(struct person PersonData) 
+{
+    //here i came up with a crutch to make console clean and pretty, not sure if it's comfortable to use tho
+    int n;
+    int personNumber;
+    int offset;
+    bool loop = true;
+
+    while (loop)
+    {
+        loop = false;
+        printf("choose your operation:\n");
+        printf("1. enter data of a person\n"); //TODO: show an error if inputted person's number is out of bounds of an array
+        printf("2. show data of a person\n"); //TODO: show an error if inputted person's number is out of bounds of an array
+        printf("3. show the whole database\n");
+        printf("4. delete data of a person\n"); //TODO: show an error if inputted person's number is out of bounds of an array
+        printf("5. delete the whole database\n");
+        printf("6. change data of a person\n");
+        printf("7. change certain data of a person\n");
+        printf("8. exit the program\n");
+        scanf("%d", &n);
+        system("clear");
+
+        switch(n)
+        {
+        case 1:
+            printf("you wish to enter data...\n");
+            enterData(PersonData);
+            
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber); //that's the crutch
+            
+            loop = true;
+            system("clear");
+            break;
+        case 2:
+            printf("you wish to look...\n");
+            printf("enter person number...\n");
+            scanf("%d", &personNumber);
+            showSingleData(PersonData, personNumber);
+            
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+            
+            loop = true;
+            system("clear");
+            break;
+        case 3:
+            printf("you wish to look at everything...\n");
+            showData(PersonData);
+
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+
+            loop = true;
+            system("clear");
+            break;
+        case 4:
+            printf("you wish to delete...\n");
+            printf("enter person number...\n");
+            scanf("%d", &personNumber);
+            deleteSingleData(PersonData, personNumber);
+
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+
+            loop = true;
+            system("clear");
+            break;
+        case 5:
+            printf("you wish to delete everything...\n");
+            deleteData(PersonData);
+
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+
+            loop = true;
+            system("clear");
+            break;
+        case 6:
+            printf("you wish to change data...\n");
+            printf("enter person number...\n");
+            scanf("%d", &personNumber);
+            changeData(PersonData, personNumber);
+
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+
+            loop = true;
+            system("clear");
+            break;
+        case 7:
+            printf("you wish to change certain data...\n");
+            printf("enter person number...\n");
+            scanf("%d", &personNumber);
+            printf("enter which data you wish to change...\n");
+            scanf("%d", &offset);
+            changeSingleData(PersonData, personNumber, offset);
+
+            printf("enter any number to continue...\n");
+            scanf("%d", &personNumber);
+
+            loop = true;
+            system("clear");
+            break;
+        case 8:
+            printf("you wish to leave...\n");
+            exit(1);
+        }
+    }
+}
+	
+int main()
+{
+	fd = fopen("/home/lokobelka/Desktop/projects/database/database.txt", "r+");
+	struct person PersonData;
+
+	basicUserInterface(PersonData);
+    fclose(fd);
+
+	return 0;
+}
+
